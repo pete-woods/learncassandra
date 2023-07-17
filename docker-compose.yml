@@ -1,0 +1,76 @@
+version: "3.7"
+
+services:
+  cassandra1:
+    image: cassandra:3
+    healthcheck:
+      test: [ "CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    ports:
+      - "127.0.0.1:9042:9042"
+      - "127.0.0.1:9160:9160"
+      - "127.0.0.1:7199:7199"
+    environment:
+      - MAX_HEAP_SIZE=256M
+      - HEAP_NEWSIZE=128M
+      - CASSANDRA_SEEDS=cassandra1,cassandra2
+      - CASSANDRA_CLUSTER_NAME=cluster1
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_RACK=rack1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_NUM_TOKENS=128
+
+  cassandra2:
+    image: cassandra:3
+    depends_on:
+      - cassandra1
+    healthcheck:
+      test: [ "CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    ports:
+      - "127.0.0.1:9043:9042"
+    environment:
+      - MAX_HEAP_SIZE=256M
+      - HEAP_NEWSIZE=128M
+      - CASSANDRA_SEEDS=cassandra1,cassandra2
+      - CASSANDRA_CLUSTER_NAME=cluster1
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_RACK=rack1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_NUM_TOKENS=128
+
+  cassandra3:
+    image: cassandra:3
+    depends_on:
+      - cassandra1
+      - cassandra2
+    healthcheck:
+      test: [ "CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    ports:
+      - "127.0.0.1:9044:9042"
+    environment:
+      - MAX_HEAP_SIZE=256M
+      - HEAP_NEWSIZE=128M
+      - CASSANDRA_SEEDS=cassandra1,cassandra2
+      - CASSANDRA_CLUSTER_NAME=cluster1
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_RACK=rack1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_NUM_TOKENS=128
+
+#  cassandra-init:
+#    image: cassandra:3
+#    depends_on:
+#      - cassandra1
+#      - cassandra2
+#      - cassandra3
+#    volumes:
+#      - ./db/schema.cql:/schema.cql
+#    command: /bin/bash -c "sleep 20 && echo loading cassandra keyspace && cqlsh cassandra1 -f /schema.cql"
