@@ -65,12 +65,15 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - CASSANDRA_NUM_TOKENS=128
 
-#  cassandra-init:
-#    image: cassandra:3
-#    depends_on:
-#      - cassandra1
-#      - cassandra2
-#      - cassandra3
-#    volumes:
-#      - ./db/schema.cql:/schema.cql
-#    command: /bin/bash -c "sleep 20 && echo loading cassandra keyspace && cqlsh cassandra1 -f /schema.cql"
+  cassandra-init:
+    image: cassandra:3
+    depends_on:
+      - cassandra1
+      - cassandra2
+      - cassandra3
+    volumes:
+      - ./db/schema.cql:/schema.cql
+    command:
+      - '/bin/bash'
+      - '-c'
+      - 'until cqlsh cassandra1 -e "describe keyspaces"; do sleep 1; done; echo "loading schema"; cqlsh cassandra1 -f /schema.cql'
